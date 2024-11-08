@@ -13,7 +13,7 @@ To run the language, clone this repository and follow the instructions below:
 
 ```bash
 # Clone this repository
-git clone https://github.com/DcDnc/bscript.git
+git clone https://github.com/dcdncp/buildscript.git
 cd bscript
 
 # Compile (or set up) the language
