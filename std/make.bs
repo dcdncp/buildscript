@@ -1,0 +1,61 @@
+const fs = import("std/fs")
+
+CC = "gcc"
+const OBJs = []
+const rules = []
+
+define set_compiler(cc) 
+    CC = cc
+end
+
+define create_rule(out, deps)
+    return (out, deps, [])
+end
+
+current_rule = create_rule("", [])
+
+define rule(out, deps, f)
+    current_rule = create_rule(out, deps)
+    f()
+    rules.insert(0, current_rule)
+end
+
+define cmd(...args)
+    current_rule[2].push(args)
+end
+
+define src(path, ...headers)
+    obj_path = path + ".o"
+    OBJs.push(obj_path)
+    rule(obj_path, [path, ...headers], define()
+        cmd(CC, "-c", "-o", obj_path, path)
+    end)
+end
+
+define target(path)
+    rule(path, OBJs, define()
+        cmd(CC, "-o", path, ...OBJs)
+    end)
+end 
+
+define build()
+    out = ""
+    for rule in rules
+        out = out + rule[0] + ": "
+        const deps = rule[1]
+        for dep in deps
+            out = out + dep + " "
+        end
+        out = out + "\n"
+        const cmds = rule[2]
+        for cmd in cmds
+            out = out + "\t"
+            for arg in cmd
+                out = out + arg + " "
+            end
+            out = out + "\n"
+        end
+    end
+    fs.write_file("Makefile", out)
+end
+

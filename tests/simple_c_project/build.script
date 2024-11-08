@@ -1,0 +1,10 @@
+const make = import("std/make")
+
+make.set_compiler("gcc")
+
+make.src("src/main.c")
+make.src("src/test.c", "src/test.h")
+
+make.target("app.exe")
+make.build()
+
