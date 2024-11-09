@@ -45,6 +45,7 @@ func init() {
 	ModuleType = types.NewAtomType("Module", EmptyModule)
 	NullType = types.NewType("Null", nil)
 
+	IntType.ConstField(symbol.Init, NewStaticExtern(intInit))
 	AddTypeMethod(IntType, symbol.Add, intAdd)
 	AddTypeMethod(IntType, symbol.Sub, intSub)
 	AddTypeMethod(IntType, symbol.Mul, intMul)

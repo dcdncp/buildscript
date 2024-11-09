@@ -6,6 +6,7 @@ import (
 	"bscript/runtime/types"
 	"bscript/runtime/value"
 	"fmt"
+	"strconv"
 )
 
 type Int struct {
@@ -28,6 +29,33 @@ func (o *Int) Copy() value.Value {
 	return NewInt(o.Value)
 }
 
+func intInit(env *value.Env, args []value.Value) (value.Value, state.State) {
+	v, stt := CheckArgsCount(env, len(args), 2, false)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+
+	v, stt = CheckType(env, args[0], IntType)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+	self := v.(*Int)
+
+	v = args[1]
+	if v.Type() == IntType {
+		self.Value = v.(*Int).Value
+	} else if v.Type() == StringType {
+		value, err := strconv.ParseInt(v.(*String).Value, 10, 64)
+		if err != nil {
+			return ThrowException(env, err.Error())
+		}
+		self.Value = value
+	} else {
+		return ThrowException(env, "value has incorrect type, expected Int or String")
+	}
+
+	return nil, state.Ok
+}
 func intAdd(env *value.Env, args []value.Value) (value.Value, state.State) {
 	a := args[0].(*Int)
 	b := args[1].(*Int)
