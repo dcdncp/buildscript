@@ -27,9 +27,46 @@ func (o *String) Copy() value.Value {
 	return NewString(o.Value)
 }
 
+func stringInit(env *value.Env, args []value.Value) (value.Value, state.State) {
+	v, stt := CheckArgsCount(env, len(args), 2, false)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+
+	v, stt = CheckType(env, args[0], StringType)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+	self := v.(*String)
+	
+	value := args[1]
+	v, stt = ToString(env, value)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+
+	self.Value = v.(*String).Value
+
+	return nil, state.Ok
+}
 func stringAdd(env *value.Env, args []value.Value) (value.Value, state.State) {
-	self := args[0].(*String)
-	other := args[1].(*String)
+	v, stt := CheckArgsCount(env, len(args), 2, false)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+
+	v, stt = CheckType(env, args[0], StringType)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+	self := v.(*String)
+
+	v, stt = CheckType(env, args[1], StringType)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+	other := v.(*String)
+
 	return NewString(self.Value + other.Value), state.Ok
 }
 func stringString(env *value.Env, args []value.Value) (value.Value, state.State) {

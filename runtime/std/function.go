@@ -44,20 +44,6 @@ func NewMethod(env *value.Env, params []string, body ast.Stmt, variadic bool) *F
 	self.static = false
 	return self
 }
-func CheckArgsCount(env *value.Env, count, expected int, variadic bool) (value.Value, state.State) {
-	if variadic {
-		if count < expected-1 {
-			return ThrowException(env, "too few arguments")
-		}
-	} else {
-		if count < expected {
-			return ThrowException(env, "too few arguments")
-		} else if count > expected {
-			return ThrowException(env, "too many arguments")
-		}
-	}
-	return nil, state.Ok
-}
 func (o *Function) Call(env *value.Env, args ...value.Value) (value.Value, state.State, bool) {
 	e := o.Env.NewChild()
 	v, stt := CheckArgsCount(env, len(args), len(o.Params), o.Variadic)

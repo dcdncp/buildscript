@@ -58,7 +58,14 @@ func arrayIter(env *value.Env, args []value.Value) (value.Value, state.State) {
 		return nil, state.Ok
 	}), state.Ok
 }
-func arrayIndex(env *value.Env, args []value.Value) (value.Value, state.State) {
+func arrayIndexSet(env *value.Env, args []value.Value) (value.Value, state.State) {
+	self := args[0].(*Array)
+	index := args[1].(*Int).Value
+	value := args[2]
+	self.Values[index] = value
+	return nil, state.Ok
+}
+func arrayIndexGet(env *value.Env, args []value.Value) (value.Value, state.State) {
 	self := args[0].(*Array)
 	index := args[1].(*Int).Value
 	return self.Values[index], state.Ok

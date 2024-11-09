@@ -27,7 +27,11 @@ func NewTuple(values []value.Value) *Tuple {
 func (o *Tuple) Copy() value.Value {
 	return NewTuple(o.Values)
 }
-
+func tupleInit(env *value.Env, args []value.Value) (value.Value, state.State) {
+	self := args[0].(*Tuple)
+	self.Values = args[1:]
+	return nil, state.Ok
+}
 func tupleString(env *value.Env, args []value.Value) (value.Value, state.State) {
 	self := args[0].(*Tuple)
 	strs := make([]string, 0)
@@ -40,7 +44,30 @@ func tupleString(env *value.Env, args []value.Value) (value.Value, state.State) 
 	}
 	return NewString("(" + strings.Join(strs, ", ") + ")"), state.Ok
 }
-func tupleIndex(env *value.Env, args []value.Value) (value.Value, state.State) {
+func tupleIndexSet(env *value.Env, args []value.Value) (value.Value, state.State) {
+	v, stt := CheckArgsCount(env, len(args), 3, false)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+
+	v, stt = CheckType(env, args[0], TupleType)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+	self := v.(*Tuple)
+
+	v, stt = CheckType(env, args[1], IntType)
+	if stt.IsNotOkay() {
+		return v, stt
+	}
+	index := v.(*Int).Value
+
+	value := args[2]
+
+	self.Values[index] = value
+	return nil, state.Ok
+}
+func tupleIndexGet(env *value.Env, args []value.Value) (value.Value, state.State) {
 	self := args[0].(*Tuple)
 	index := args[1].(*Int).Value
 	return self.Values[index], state.Ok

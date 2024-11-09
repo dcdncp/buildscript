@@ -10,16 +10,17 @@ import (
 )
 
 func importModule(env *value.Env, args []value.Value) (value.Value, state.State) {
-	if len(args) != 1 {
-		return NewString("incorrect count of arguments"), state.Error
+	v, stt := CheckArgsCount(env, len(args), 1, false)
+	if stt.IsNotOkay() {
+		return v, stt
 	}
-	source := env.Global.Source
-	file := env.Global.SourceFile
-	v := args[0]
-	if v.Type() != StringType {
-		return NewString("function 'import' requires string argument"), state.Error
+	v, stt = CheckType(env, args[0], StringType)
+	if stt.IsNotOkay() {
+		return v, stt
 	}
 	p := v.(*String).Value
+	source := env.Global.Source
+	file := env.Global.SourceFile
 	if strings.HasPrefix(p, "std/") {
 		p :=  strings.TrimPrefix(p, "std/")
 		e, exists := Modules[p]
@@ -41,7 +42,7 @@ func importModule(env *value.Env, args []value.Value) (value.Value, state.State)
 	if !path.IsAbs(p) {
 		p = path.Join(path.Dir(env.Global.SourceFile), p)
 	}
-	v, stt := env.Global.EvalFile(p)
+	v, stt = env.Global.EvalFile(p)
 	env.Global.Source = source
 	env.Global.SourceFile = file
 	return v, stt

@@ -81,10 +81,10 @@ func (o *Object) SetParent(value value.Value) {
 	o.parent = value
 }
 func (o *Object) GetKey(e *value.Env, key value.Value) (value.Value, state.State, bool) {
-	return o.callMethod(e, symbol.Get, key)
+	return o.callMethod(e, symbol.IndexGet, key)
 }
 func (o *Object) SetKey(e *value.Env, key value.Value, value value.Value) (value.Value, state.State, bool) {
-	return o.callMethod(e, symbol.Set, key, value)
+	return o.callMethod(e, symbol.IndexSet, key, value)
 }
 func (o *Object) Add(e *value.Env, other value.Value) (value.Value, state.State, bool) {
 	return o.callMethod(e, symbol.Add, other)

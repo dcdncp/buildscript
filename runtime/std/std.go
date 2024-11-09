@@ -55,16 +55,20 @@ func init() {
 
 	AddTypeMethod(BoolType, symbol.String, boolString)
 
+	StringType.ConstField(symbol.Init, NewStaticExtern(stringInit))
 	AddTypeMethod(StringType, symbol.Add, stringAdd)
 	AddTypeMethod(StringType, symbol.String, stringString)
 
+	TupleType.ConstField(symbol.Init, NewStaticExtern(tupleInit))
 	AddTypeMethod(TupleType, symbol.String, tupleString)
 	AddTypeMethod(TupleType, symbol.Iter, tupleIter)
-	AddTypeMethod(TupleType, symbol.Get, tupleIndex)
+	AddTypeMethod(TupleType, symbol.IndexGet, tupleIndexGet)
+	AddTypeMethod(TupleType, symbol.IndexSet, tupleIndexSet)
 
 	AddTypeMethod(ArrayType, symbol.String, arrayString)
 	AddTypeMethod(ArrayType, symbol.Iter, arrayIter)
-	AddTypeMethod(ArrayType, symbol.Get, arrayIndex)
+	AddTypeMethod(ArrayType, symbol.IndexGet, arrayIndexGet)
+	AddTypeMethod(ArrayType, symbol.IndexSet, arrayIndexSet)
 	AddTypeMethod(ArrayType, "push", arrayPush)
 	AddTypeMethod(ArrayType, "insert", arrayInsert)
 

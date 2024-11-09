@@ -132,7 +132,15 @@ func EvalForStmt(env *value.Env, stmt *ast.ForStmt) (value.Value, state.State) {
 	}
 	ln := env.Global.Node
 	env.SetCurrentNode(stmt.In)
-	iterator, stt := std.GetIter(env, in)
+	var iterator value.Value
+	if in.Type() == std.FunctionType {
+		iterator = in
+	} else {
+		iterator, stt = std.GetIter(env, in)
+		if stt.IsNotOkay() {
+			return iterator, stt
+		}
+	}
 	env.SetCurrentNode(ln)
 	if stt.IsNotOkay() {
 		return iterator, stt
