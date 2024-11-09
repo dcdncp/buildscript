@@ -1,2 +1,3 @@
 bscript.exe
 bscript
+tests/*.bs
