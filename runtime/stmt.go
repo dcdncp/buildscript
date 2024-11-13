@@ -4,6 +4,8 @@ import (
 	"bscript/parser/ast"
 	"bscript/runtime/state"
 	"bscript/runtime/std"
+	"bscript/runtime/symbol"
+	"bscript/runtime/types"
 	"bscript/runtime/value"
 	"fmt"
 )
@@ -49,6 +51,8 @@ func EvalStmt(env *value.Env, stmt ast.Stmt) (value.Value, state.State) {
 		return EvalForStmt(env, stmt.(*ast.ForStmt))
 	case ast.WhileStmtKind:
 		return EvalWhileStmt(env, stmt.(*ast.WhileStmt))
+	case ast.ClassStmtKind:
+		return EvalClassStmt(env, stmt.(*ast.ClassStmt))
 	case ast.ExprStmtKind:
 		return EvalExpr(env, stmt.(*ast.ExprStmt).Expr)
 	case ast.BreakStmtKind:
@@ -85,7 +89,7 @@ func EvalConstStmt(env *value.Env, stmt *ast.ConstStmt) (value.Value, state.Stat
 		return v, stt
 	}
 	if !env.Const(id, v) {
-		return std.ThrowException(env, fmt.Sprintf("variable '%s' is already exists", id))
+		return std.ThrowException(env, fmt.Sprintf("name '%s' is already exists", id))
 	}
 	return nil, state.Ok
 }
@@ -97,9 +101,9 @@ func EvalDefineStmt(env *value.Env, stmt *ast.DefineStmt) (value.Value, state.St
 	}
 	f := std.NewFunction(env, nil, params, stmt.Body, stmt.Variadic, true)
 	if !env.Const(ident, f) {
-		return std.ThrowException(env, fmt.Sprintf("'%s' is already exist", ident))
+		return std.ThrowException(env, fmt.Sprintf("name '%s' is already exist", ident))
 	}
-	return nil, state.Ok
+	return f, state.Ok
 }
 func EvalBlockStmt(env *value.Env, stmt *ast.BlockStmt) (value.Value, state.State) {
 	e := env.NewChild()
@@ -171,4 +175,70 @@ func EvalWhileStmt(env *value.Env, stmt *ast.WhileStmt) (value.Value, state.Stat
 		}
 	}
 	return nil, state.Ok
+}
+func EvalClassStmt(env *value.Env, stmt *ast.ClassStmt) (value.Value, state.State) {
+	name := stmt.Name.Value
+	class := types.NewType(name, nil)
+	stmts := stmt.Body.(*ast.BlockStmt).Body
+	for _, s := range stmts {
+		if s.Kind() == ast.DefineStmtKind {
+			dstmt := s.(*ast.DefineStmt)
+			fname := dstmt.Ident.Value
+			params := make([]string, 0)
+			for _, p := range dstmt.Params {
+				params = append(params, p.Value)
+			}
+			v := std.NewFunction(env, nil, params, dstmt.Body, dstmt.Variadic, true)
+			if fname == symbol.Init {
+				if !class.ConstField(symbol.Init, v) {
+					return std.ThrowException(env, fmt.Sprintf("method '%s' is already exist", symbol.Init))
+				}
+			} else if len(dstmt.Params) > 0 && dstmt.Params[0].Value == "self" {
+				v.Static = false
+				if !class.Proto.ConstField(fname, v) {
+					return std.ThrowException(env, fmt.Sprintf("method '%s' is already exist", fname))
+				}
+			} else {
+				if !class.Proto.ConstField(fname, v) {
+					return std.ThrowException(env, fmt.Sprintf("method '%s' is already exist", fname))
+				}
+			}
+		} else if s.Kind() == ast.ExprStmtKind {
+			e := s.(*ast.ExprStmt).Expr
+			if e.Kind() == ast.AssignExprKind {
+				e := e.(*ast.AssignExpr)
+				if e.LHS.Kind() != ast.IdentExprKind {
+					s := env.Global.Node
+					defer env.SetCurrentNode(s)
+					env.SetCurrentNode(e.LHS)
+					return std.ThrowException(env, "not allowed here")
+				}
+				ident := e.LHS.(*ast.IdentExpr).Value
+				v, stt := EvalExpr(env, e.RHS)
+				if stt.IsNotOkay() {
+					return v, stt
+				}
+				if !class.Proto.ConstField(ident, v) {
+					s := env.Global.Node
+					defer env.SetCurrentNode(s)
+					env.SetCurrentNode(e.LHS)
+					return std.ThrowException(env, fmt.Sprintf("name '%s' is already exist", name))
+				}
+			} else {
+				s := env.Global.Node
+				defer env.SetCurrentNode(s)
+				env.SetCurrentNode(e)
+				return std.ThrowException(env, "not allowed here")
+			}
+		} else {
+			ps := env.Global.Node
+			defer env.SetCurrentNode(ps)
+			env.SetCurrentNode(s)
+			return std.ThrowException(env, "not allowed here")
+		}
+	}
+	if !env.Const(name, class) {
+		return std.ThrowException(env, fmt.Sprintf("name '%s' is already exist", name))
+	}
+	return class, state.Ok
 }

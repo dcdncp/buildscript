@@ -1,8 +1,9 @@
 package types
 
 import (
-	"bscript/runtime/value"
 	"bscript/runtime/object"
+	"bscript/runtime/symbol"
+	"bscript/runtime/value"
 )
 
 type Type struct {
@@ -31,6 +32,7 @@ func NewType(name string, parent *Type) *Type {
 	self.Default = object.EmptyObject
 	proto := ProtoType.New()
 	self.Proto = proto
+	self.ConstField(symbol.Proto, proto)
 	return self
 }
 func NewAtomType(name string, defaultF func() value.Value) *Type {
@@ -39,6 +41,7 @@ func NewAtomType(name string, defaultF func() value.Value) *Type {
 	self.Default = defaultF
 	proto := ProtoType.New()
 	self.Proto = proto
+	self.ConstField(symbol.Proto, proto)
 	return self
 }
 func (o *Type) Type() value.Value {

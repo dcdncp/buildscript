@@ -8,6 +8,7 @@ import (
 
 var Env *value.Env
 var Modules map[string]*value.Env = make(map[string]*value.Env)
+var LoadedModules map[string]value.Value = make(map[string]value.Value)
 
 func AddValue(name string, v value.Value) {
 	Env.Const(name, v)

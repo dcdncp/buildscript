@@ -6,21 +6,23 @@ import (
 	"bscript/runtime/state"
 	"bscript/runtime/types"
 	"bscript/runtime/value"
+	"bscript/tools"
 	"fmt"
 )
 
 type Function struct {
 	*object.Object
-	Env      *value.Env
-	Self     value.Value
-	Params   []string
-	Body     ast.Stmt
-	Variadic bool
-	static   bool
+	Env                *value.Env
+	Self               value.Value
+	Params             []string
+	Body               ast.Stmt
+	Variadic           bool
+	Static             bool
+	Source, SourceFile string
 }
 
 func EmptyFunction() value.Value {
-	return &Function{object.EmptyObject().(*object.Object), nil, nil, make([]string, 0), nil, false, false}
+	return &Function{object.EmptyObject().(*object.Object), nil, nil, make([]string, 0), nil, false, false, "", ""}
 }
 
 var FunctionType *types.Type
@@ -32,6 +34,8 @@ func NewFunction(env *value.Env, s value.Value, params []string, body ast.Stmt, 
 	self.Params = params
 	self.Body = body
 	self.Variadic = variadic
+	self.Source = env.Global.Source
+	self.SourceFile = env.Global.SourceFile
 	return self
 }
 func NewMethod(env *value.Env, params []string, body ast.Stmt, variadic bool) *Function {
@@ -41,11 +45,25 @@ func NewMethod(env *value.Env, params []string, body ast.Stmt, variadic bool) *F
 	self.Params = params
 	self.Body = body
 	self.Variadic = variadic
-	self.static = false
+	self.Static = false
+	self.Source = env.Global.Source
+	self.SourceFile = env.Global.SourceFile
 	return self
 }
-func (o *Function) Call(env *value.Env, args ...value.Value) (value.Value, state.State, bool) {
+func (o *Function) Call(env *value.Env, iargs ...value.Value) (value.Value, state.State, bool) {
+	args := iargs
+	if o.Self != nil {
+		args = tools.AppendFront(args, o.Self)
+	}
 	e := o.Env.NewChild()
+	source := e.Global.Source
+	file := e.Global.SourceFile
+	e.Global.Source = o.Source
+	e.Global.SourceFile = o.SourceFile
+	defer func() {
+		e.Global.Source = source
+		e.Global.SourceFile = file
+	}()
 	v, stt := CheckArgsCount(env, len(args), len(o.Params), o.Variadic)
 	if stt.IsNotOkay() {
 		return v, stt, true
@@ -96,7 +114,7 @@ func (o *Function) Call(env *value.Env, args ...value.Value) (value.Value, state
 	return NewNull(), state.Ok, true
 }
 func (o *Function) IsMethod() bool {
-	return !o.static
+	return !o.Static
 }
 func (o *Function) IsFunction() bool {
 	return true
@@ -106,5 +124,5 @@ func (o *Function) BindFunction(self value.Value) bool {
 	return true
 }
 func (o *Function) Copy() value.Value {
-	return NewFunction(o.Env, o.Self, o.Params, o.Body, o.Variadic, o.static)
+	return NewFunction(o.Env, o.Self, o.Params, o.Body, o.Variadic, o.Static)
 }

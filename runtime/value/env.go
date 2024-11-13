@@ -16,6 +16,7 @@ type Variable struct {
 type VariableMap map[string]*Variable
 
 type GlobalContext struct {
+	WorkingDir         string
 	SourceFile, Source string
 	Node               ast.Node
 	Callstack          []string
@@ -31,7 +32,7 @@ type Env struct {
 }
 
 func NewEnv() *Env {
-	return &Env{&GlobalContext{"", "", nil, make([]string, 0), nil, nil, nil}, nil, make(VariableMap)}
+	return &Env{&GlobalContext{"", "", "", nil, make([]string, 0), nil, nil, nil}, nil, make(VariableMap)}
 }
 func (e *Env) NewChild() *Env {
 	return &Env{e.Global, e, make(VariableMap)}

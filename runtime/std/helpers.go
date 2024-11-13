@@ -27,3 +27,11 @@ func CheckType(env *value.Env, v value.Value, typ value.Value) (value.Value, sta
 	}
 	return v, state.Ok
 }
+func CheckTypes(env *value.Env, values []value.Value, typ value.Value) (value.Value, state.State) {
+	for _, v := range values {
+		if v.Type().(*types.Type) != typ.(*types.Type) {
+			return ThrowException(env, fmt.Sprintf("value has incorrect type, '%s' expected", typ.(*types.Type).Name))
+		}
+	}
+	return NewTuple(values), state.Ok
+}

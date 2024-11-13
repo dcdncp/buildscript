@@ -1,5 +1,13 @@
 const fs = import("std/fs")
 
+class Rule
+    define __init(self, out, deps)
+        self.out = out
+        self.deps = deps
+        self.cmds = []
+    end
+end
+
 CC = "gcc"
 const OBJs = []
 const rules = []
@@ -8,20 +16,16 @@ define set_compiler(cc)
     CC = cc
 end
 
-define create_rule(out, deps)
-    return (out, deps, [])
-end
-
-current_rule = create_rule("", [])
+current_rule = Rule("", [])
 
 define rule(out, deps, f)
-    current_rule = create_rule(out, deps)
+    current_rule = Rule(out, deps)
     f()
     rules.insert(0, current_rule)
 end
 
 define cmd(...args)
-    current_rule[2].push(args)
+    current_rule.cmds.push(args)
 end
 
 define src(path, ...headers)
@@ -41,14 +45,13 @@ end
 define build()
     out = ""
     for rule in rules
-        out = out + rule[0] + ": "
-        const deps = rule[1]
-        for dep in deps
+        out = out + rule.out + ": "
+        for dep in rule.deps
             out = out + dep + " "
         end
         out = out + "\n"
-        const cmds = rule[2]
-        for cmd in cmds
+
+        for cmd in rule.cmds
             out = out + "\t"
             for arg in cmd
                 out = out + arg + " "

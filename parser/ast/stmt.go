@@ -205,3 +205,19 @@ func (ThrowStmt) Kind() StmtKind {
 func (s *ThrowStmt) String() string {
 	return fmt.Sprintf("<throw %s>", s.Value)
 }
+
+type ClassStmt struct {
+	position.Boundaries
+	Name token.Token
+	Body Stmt
+}
+
+func NewClassStmt(name token.Token, body Stmt) *ClassStmt {
+	return &ClassStmt{Name: name, Body: body}
+}
+func (ClassStmt) Kind() StmtKind {
+	return ClassStmtKind
+}
+func (s *ClassStmt) String() string {
+	return fmt.Sprintf("<class %s>", s.Name)
+}

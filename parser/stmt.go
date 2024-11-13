@@ -38,6 +38,8 @@ func (p *Parser) ParseStmt() (ast.Stmt, bool) {
 	} else if p.Match(token.Break) {
 		it := p.Eat()
 		return boundaries(ast.NewBreakStmt(), it.Start(), it.End()), false
+	} else if p.Match(token.Class) {
+		return p.ParseClassStmt()
 	} else if p.Match(token.Return) {
 		it := p.Eat()
 		end := it.End()
@@ -189,4 +191,13 @@ func (p *Parser) ParseWhileStmt() (*ast.WhileStmt, bool) {
 		err = e
 	}
 	return boundaries(ast.NewWhileStmt(condition, body), start.Start(), body.End()), err
+}
+func (p *Parser) ParseClassStmt() (*ast.ClassStmt, bool) {
+	start := p.Eat()
+	name, err := p.Expect(token.Ident)
+	body, e := p.ParseBlockStmt()
+	if !err {
+		err = e
+	}
+	return boundaries(ast.NewClassStmt(name, body), start.Start(), body.End()), err
 }

@@ -11,7 +11,7 @@ import (
 func readFile(env *value.Env, args []value.Value) (value.Value, state.State) {
 	p := args[0].(*std.String).Value
 	if !path.IsAbs(p) {
-		p = path.Join(path.Join(path.Dir(env.Global.SourceFile), p))
+		p = path.Join(path.Join(env.Global.WorkingDir, p))
 	}
 	content, err := os.ReadFile(p)
 	if err != nil {
@@ -23,7 +23,7 @@ func readFile(env *value.Env, args []value.Value) (value.Value, state.State) {
 func writeFile(env *value.Env, args []value.Value) (value.Value, state.State) {
 	p := args[0].(*std.String).Value
 	if !path.IsAbs(p) {
-		p = path.Join(path.Join(path.Dir(env.Global.SourceFile), p))
+		p = path.Join(path.Join(env.Global.WorkingDir, p))
 	}
 	content := args[1].(*std.String).Value
 	err := os.WriteFile(p, []byte(content), os.ModePerm)

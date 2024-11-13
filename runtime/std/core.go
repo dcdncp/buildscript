@@ -25,6 +25,8 @@ func importModule(env *value.Env, args []value.Value) (value.Value, state.State)
 		p :=  strings.TrimPrefix(p, "std/")
 		e, exists := Modules[p]
 		if exists {
+			env.Global.Source = source
+			env.Global.SourceFile = file
 			return NewModule(e), state.Ok
 		}
 		cp, err := os.Getwd()
@@ -33,7 +35,16 @@ func importModule(env *value.Env, args []value.Value) (value.Value, state.State)
 		} 
 		p = path.Join(cp, "std", p) + ".bs"
 		if _, err := os.Stat(p); err == nil {
+			m, exists := LoadedModules[p]
+			if exists {
+				env.Global.Source = source
+				env.Global.SourceFile = file
+				return m, state.Ok
+			}
 			v, stt := env.Global.EvalFile(p)
+			if stt.IsOkay() {
+				LoadedModules[p] = v
+			}
 			env.Global.Source = source
 			env.Global.SourceFile = file
 			return v, stt
@@ -42,7 +53,16 @@ func importModule(env *value.Env, args []value.Value) (value.Value, state.State)
 	if !path.IsAbs(p) {
 		p = path.Join(path.Dir(env.Global.SourceFile), p)
 	}
+	m, exists := LoadedModules[p]
+	if exists {
+		env.Global.Source = source
+		env.Global.SourceFile = file
+		return m, state.Ok
+	}
 	v, stt = env.Global.EvalFile(p)
+	if stt.IsOkay() {
+		LoadedModules[p] = v
+	}
 	env.Global.Source = source
 	env.Global.SourceFile = file
 	return v, stt

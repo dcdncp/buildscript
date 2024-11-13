@@ -31,6 +31,7 @@ const (
 	Return
 	Break
 	Continue
+	Class
 
 	// Operators
 	Equal
@@ -105,6 +106,8 @@ func (k Kind) String() string {
 		return "break"
 	case Continue:
 		return "continue"
+	case Class:
+		return "class"
 
 	case Equal:
 		return "="
@@ -202,14 +205,15 @@ var KeywordMap = map[string]Kind{
 	"continue": Continue,
 	"break":    Break,
 	"return":   Return,
+	"class":    Class,
 }
 
 type Token struct {
 	position.Boundaries
-	Kind       Kind
-	Value      string
-	Length     int
-	IsLast     bool
+	Kind   Kind
+	Value  string
+	Length int
+	IsLast bool
 }
 
 func (t Token) String() string {

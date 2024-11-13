@@ -47,6 +47,7 @@ const (
 	BreakStmtKind
 	ContinueStmtKind
 	ThrowStmtKind
+	ClassStmtKind
 )
 
 type Stmt interface {
