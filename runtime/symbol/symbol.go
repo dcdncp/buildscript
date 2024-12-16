@@ -10,6 +10,7 @@ const (
 	Call      = "__call"
 	Init      = "__init"
 	String    = "__string"
+	Repr      = "__repr"
 	Proto     = "__proto"
 	Iter      = "__iter"
 	Eq        = "__eq"

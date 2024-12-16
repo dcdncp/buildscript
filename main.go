@@ -9,7 +9,7 @@ import (
 func main() {
 	args := os.Args
 	var path string
-	if len(args) == 0 {
+	if len(args) == 1 {
 		path = "build.script"
 	} else {
 		path = args[1]
